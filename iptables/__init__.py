@@ -123,6 +123,7 @@ __all__ = [
 	"MatchICMP",
 	"MatchMAC",
 	"MatchTCPMSS",
+	"MatchState",
 # Options
 	"Option",
 	"Protocol",

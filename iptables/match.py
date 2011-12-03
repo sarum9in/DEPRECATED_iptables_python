@@ -28,7 +28,7 @@ class Match(object):
 		args = self._args
 		if not args:
 			args = []
-		return ["-m", self._match]+args
+		return ["--match", self._match]+args
 	def setup(self, policy):
 		"""
 			Will be called by policy, used to set up policy object
@@ -81,6 +81,11 @@ class MatchTCPMSS(Match):
 			mss_ += ":"+str(mss_end)
 		self.arg(mss_)
 
+class MatchState(Match):
+	def __init__(self, *state):
+		super(MatchState, self).__init__()
+		self.match("state").arg(",".join(state))
+
 __all__ = [
 	"Match",
 	"MatchTCPUDP",
@@ -88,6 +93,7 @@ __all__ = [
 	"MatchUDP",
 	"MatchICMP",
 	"MatchMAC",
-	"MatchTCPMSS"
+	"MatchTCPMSS",
+	"MatchState"
 ]
 
