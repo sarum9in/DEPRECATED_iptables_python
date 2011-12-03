@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from options import *
+from option import *
 
 class Match(object):
 	def __init__(self):

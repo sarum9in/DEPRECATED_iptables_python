@@ -73,7 +73,7 @@ class Firewall(object):
 				with subprocess.Popen(self._command+i) as cmd:
 					cmd.wait()
 
-from options import *
+from option import *
 
 class Rule(object):
 	"""Represents iptables rule"""
