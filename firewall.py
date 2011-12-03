@@ -73,38 +73,38 @@ class Firewall(object):
 				with subprocess.Popen(self._command+i) as cmd:
 					cmd.wait()
 
+from options import *
+
 class Rule(object):
 	"""Represents iptables rule"""
 	def __init__(self):
-		self._attr = ["table", "chain", "protocol", "source", "destination", "jump", "in_interface", "out_interface", "tail_range", "tail", "match"]
+		self._attr = ["table", "chain", "jump", "tail_range", "tail", "option", "match"]
 		for i in self._attr:
 			setattr(self, "_"+i, None)
-	def protocol(self, protocol, negate=False):
-		self._protocol = protocol, negate
-		return self
-	def source(self, source, negate=False):
-		self._source = source, negate
-		return self
-	def destination(self, destination, negate=False):
-		self._destination = destination, negate
-		return self
 	def jump(self, jump):
 		self._jump = jump
 		return self
 	#def goto(self, goto):
 	#	self._goto = goto
 	#	return self
-	def in_interface(self, in_interface, negate=False):
-		self._in_interface = in_interface, negate
+	def protocol(self, protocol):
+		return self.option(Protocol(protocol))
+	def source(self, host):
+		return self.option(Source(host))
+	def destination(self, host):
+		return self.option(Destination(host))
+	def option(self, option):
+		if not self._option:
+			self._option = []
+		if option not in self._option:
+			self._option.append(option)
 		return self
-	def out_interface(self, out_interface, negate=False):
-		self._out_interface = out_interface, negate
-		return self
-	def match(self, matcher):
-		matcher.setup(self)
+	def match(self, match):
+		match.setup(self)
 		if not self._match:
 			self._match = []
-		self._match.append(matcher)
+		if match not in self._match:
+			self._match.append(match)
 		return self
 	def tail_range(self, ipaddr=None, port=None, ipaddr_end=None, port_end=None):
 		iprange = ipaddr and str(ipaddr) or None
@@ -136,13 +136,9 @@ class Rule(object):
 		return self
 	def apply(self, firewall):
 		rule = []
-		for i in ["protocol", "source", "destination", "in-interface", "out-interface"]:
-			attr = getattr(self, "_"+i.replace("-", "_"))
-			if attr:
-				value, negate = attr
-				if negate:
-					rule += ["!"]
-				rule += ["--{}".format(i), value]
+		if self._option:
+			for i in self._option:
+				rule += i.line()
 		if self._match:
 			for i in self._match:
 				rule += i.match_line()
@@ -212,6 +208,12 @@ class REJECT(Rule):
 		self.table("filter")
 		self.jump("REJECT")
 
+#class TCPMSS(Rule):
+#	def __init__(self, mss):
+#		super(TCPMSS, self).__init__()
+#		self.table("filter").chain("FORWARD")
+#		self.jump("TCPMSS").tail(["--set-mss", mss])
+
 class Policy(object):
 	def __init__(self, chain, policy=None):
 		self._chain = chain
@@ -230,68 +232,7 @@ class Policy(object):
 	def __repr__(self):
 		return "Policy(chain={chain}, policy={policy})".format(chain=self._chain, policy=self._policy)
 
-class Match(object):
-	def __init__(self):
-		self._attr = ["match", "args"]
-		for i in self._attr:
-			setattr(self, "_"+i, None)
-	def match(self, m):
-		"""Matcher, see iptables(8)"""
-		self._match = m
-		return self
-	def args(self, a):
-		self._args = a
-		return self
-	def arg(self, *a):
-		if not self._args:
-			self._args = []
-		for i in a:
-			self._args.append(i)
-		return self
-	def match_line(self):
-		args = self._args
-		if not args:
-			args = []
-		return ["-m", self._match]+args
-	def setup(self, policy):
-		"""
-			Will be called by policy, used to set up policy object
-			Default implementation does nothing
-		"""
-		pass
-
-class MatchTCPUDP(Match):
-	def __init__(self, protocol, sport=None, dport=None):
-		super(MatchTCPUDP, self).__init__()
-		self.match(protocol)
-		if sport:
-			self.arg("--source-port", str(sport))
-		if dport:
-			self.arg("--destination-port", str(dport))
-
-class MatchTCP(MatchTCPUDP):
-	def __init__(self, sport=None, dport=None):
-		super(MatchTCP, self).__init__("tcp", sport=sport, dport=dport)
-	def setup(self, policy):
-		policy.protocol("tcp")
-
-class MatchUDP(MatchTCPUDP):
-	def __init__(self, sport=None, dport=None):
-		super(MatchUDP, self).__init__("udp", sport=sport, dport=dport)
-	def setup(self, policy):
-		policy.protocol("udp")
-
-class MatchICMP(Match):
-	def __init__(self, icmp_type):
-		super(MatchICMP, self).__init__()
-		self.match("icmp").arg("--icmp-type", icmp_type)
-	def setup(self, policy):
-		policy.protocol("icmp")
-
-class MatchMAC(Match):
-	def __init__(self, mac_source):
-		super(MatchMAC, self).__init__()
-		self.match("mac").arg("--mac-source", mac_source)
+from match import *
 
 __all__ = [
 	"Firewall",
