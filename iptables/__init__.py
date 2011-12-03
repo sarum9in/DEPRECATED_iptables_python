@@ -3,17 +3,17 @@
 
 import subprocess
 
-class Firewall(object):
+class IPTables(object):
 	"""Represent iptables instance"""
 	def __init__(self):
-		"""Initializes firewall object"""
+		"""Initializes Iptables object"""
 		self._tables = ["filter", "nat", "mangle"]
 		self._list = []
 		self._debug = False
 		self.set_command(["iptables"])
 	def apply_rule(self, rule):
 		"""
-			Apply specified rule using firewall implementation
+			Apply specified rule using Iptables implementation
 			External function
 		"""
 		rule.apply(self)
@@ -43,16 +43,16 @@ class Firewall(object):
 		self._command = command
 	def set_debug(self):
 		"""
-			Set firewall object to debug mode
+			Set Iptables object to debug mode
 			In this mode it will simply print everything to stdout
 			instead of trying to do it
 		"""
 		self._debug = True
 	def set_normal(self):
-		"""Set firewall object to normal mode"""
+		"""Set Iptables object to normal mode"""
 		self._debug = False
 	def clear(self):
-		"""Clear firewall tables and reset policies"""
+		"""Clear Iptables tables and reset policies"""
 		for i in self._tables:
 			self.delete_chain(table=i)
 			self.flush_chain(table=i)
@@ -73,7 +73,7 @@ class Firewall(object):
 				with subprocess.Popen(self._command+i) as cmd:
 					cmd.wait()
 
-from option import *
+from iptables.option import *
 
 class Rule(object):
 	"""Represents iptables rule"""
@@ -134,7 +134,7 @@ class Rule(object):
 	def chain(self, chain):
 		self._chain = chain
 		return self
-	def apply(self, firewall):
+	def apply(self, iptables):
 		rule = []
 		if self._option:
 			for i in self._option:
@@ -146,7 +146,7 @@ class Rule(object):
 			rule += ["--jump", self._jump]
 		if self._tail:
 			rule += self._tail
-		firewall.add_rule(table=self._table, chain=self._chain, rule=rule)
+		iptables.add_rule(table=self._table, chain=self._chain, rule=rule)
 
 class DNAT(Rule):
 	# TODO random, persistent
@@ -227,15 +227,15 @@ class Policy(object):
 	def reject(self):
 		self._policy = "REJECT"
 		return self
-	def apply(self, firewall):
-		firewall.add_raw_rule(table="filter", rule=["--policy", self._chain, self._policy])
+	def apply(self, iptables):
+		iptables.add_raw_rule(table="filter", rule=["--policy", self._chain, self._policy])
 	def __repr__(self):
 		return "Policy(chain={chain}, policy={policy})".format(chain=self._chain, policy=self._policy)
 
-from match import *
+from iptables.match import *
 
 __all__ = [
-	"Firewall",
+	"IPTables",
 	"Rule",
 	"DNAT",
 	"SNAT",

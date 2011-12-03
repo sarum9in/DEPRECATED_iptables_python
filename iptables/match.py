@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from option import *
+from iptables.option import *
 
 class Match(object):
 	def __init__(self):
