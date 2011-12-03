@@ -35,7 +35,7 @@ class IPTables(object):
 			cmd.append(chain)
 		self._list.append(cmd)
 	def flush_chain(self, table, chain=None):
-		cmd = ["--table", table, "--flush-chain"]
+		cmd = ["--table", table, "--flush"]
 		if chain:
 			cmd.append(chain)
 		self._list.append(cmd)
@@ -58,12 +58,13 @@ class IPTables(object):
 			self.flush_chain(table=i)
 		for i in ["INPUT", "FORWARD", "OUTPUT"]:
 			self.apply_rule(Policy(chain=i, policy="ACCEPT"))
-	def ip_forward(self):
+	def ip_forward(self, value=True):
+		fmt = value and "1" or "0"
 		if self._debug:
-			print("echo 1 >/proc/sys/net/ipv4/ip_forward")
+			print("echo {} >/proc/sys/net/ipv4/ip_forward".format(fmt))
 		else:
 			with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
-				f.write("1")
+				f.write(fmt)
 	def commit(self):
 		"""Apply changes, all previous methods will only prepare things in memory"""
 		for i in self._list:
