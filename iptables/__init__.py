@@ -54,8 +54,8 @@ class IPTables(object):
 	def clear(self):
 		"""Clear Iptables tables and reset policies"""
 		for i in self._tables:
-			self.delete_chain(table=i)
 			self.flush_chain(table=i)
+			self.delete_chain(table=i)
 		for i in ["INPUT", "FORWARD", "OUTPUT"]:
 			self.apply_rule(Policy(chain=i, policy="ACCEPT"))
 	def ip_forward(self, value=True):
