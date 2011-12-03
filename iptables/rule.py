@@ -54,7 +54,6 @@ class Rule(object):
 	def tail(self, tail):
 		if not self._tail:
 			self._tail = []
-		self.table("filter")
 		self._tail += tail
 		return self
 	def table(self, table):
