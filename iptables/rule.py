@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from iptables.helper import *
 from iptables.option import *
 
 class Rule(object):

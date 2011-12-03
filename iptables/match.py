@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from iptables.helper import *
 from iptables.option import *
 
 class Match(object):
@@ -38,26 +39,26 @@ class Match(object):
 		return type(self)==type(match) and self.match_line()==match.match_line()
 
 class MatchTCPUDP(Match):
-	def __init__(self, protocol, sport=None, dport=None):
+	def __init__(self, protocol, sport=None, dport=None, sport_end=None, dport_end=None):
 		super(MatchTCPUDP, self).__init__()
 		self.match(protocol)
 		if sport:
-			self.arg("--source-port", str(sport))
+			self.arg("--source-port", create_range(":", sport, sport_end))
 		if dport:
-			self.arg("--destination-port", str(dport))
+			self.arg("--destination-port", create_range(":", dport, dport_end))
 	def setup(self, policy):
 		policy.option(Protocol(self._match))
 
 class MatchTCP(MatchTCPUDP):
-	def __init__(self, sport=None, dport=None):
-		super(MatchTCP, self).__init__("tcp", sport=sport, dport=dport)
+	def __init__(self, **kwargs):
+		super(MatchTCP, self).__init__("tcp", **kwargs)
 	def tcp_flags(self, mask, comp):
 		self.arg("--tcp-flags", mask, comp)
 		return self
 
 class MatchUDP(MatchTCPUDP):
-	def __init__(self, sport=None, dport=None):
-		super(MatchUDP, self).__init__("udp", sport=sport, dport=dport)
+	def __init__(self, **kwargs):
+		super(MatchUDP, self).__init__("udp", **kwargs)
 
 class MatchICMP(Match):
 	def __init__(self, icmp_type):
