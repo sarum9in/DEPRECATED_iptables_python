@@ -8,19 +8,21 @@ class Match(object):
 		self._attr = ["match", "args"]
 		for i in self._attr:
 			setattr(self, "_"+i, None)
-	def match(self, m):
+	def match(self, match):
 		"""Matcher, see iptables(8)"""
-		self._match = m
+		self._match = match
 		return self
-	def args(self, a):
-		self._args = a
+	def args(self, args):
+		self._args = args
 		return self
-	def arg(self, *a):
+	def arg(self, *args):
 		if not self._args:
 			self._args = []
-		for i in a:
+		for i in args:
 			self._args.append(i)
 		return self
+	def option(self, option):
+		self.arg(*option.line())
 	def match_line(self):
 		args = self._args
 		if not args:
@@ -43,18 +45,19 @@ class MatchTCPUDP(Match):
 			self.arg("--source-port", str(sport))
 		if dport:
 			self.arg("--destination-port", str(dport))
+	def setup(self, policy):
+		policy.option(Protocol(self._match))
 
 class MatchTCP(MatchTCPUDP):
 	def __init__(self, sport=None, dport=None):
 		super(MatchTCP, self).__init__("tcp", sport=sport, dport=dport)
-	def setup(self, policy):
-		policy.option(Protocol("tcp"))
+	def tcp_flags(self, mask, comp):
+		self.arg("--tcp-flags", mask, comp)
+		return self
 
 class MatchUDP(MatchTCPUDP):
 	def __init__(self, sport=None, dport=None):
 		super(MatchUDP, self).__init__("udp", sport=sport, dport=dport)
-	def setup(self, policy):
-		policy.option(Protocol("udp"))
 
 class MatchICMP(Match):
 	def __init__(self, icmp_type):
@@ -69,9 +72,13 @@ class MatchMAC(Match):
 		self.match("mac").arg("--mac-source", mac_source)
 
 class MatchTCPMSS(Match):
-	def __init__(self, mss):
+	def __init__(self, mss, mss_end=None):
 		super(MatchTCPMSS, self).__init__()
-		self.match("tcpmss").arg("--mss", mss)
+		self.match("tcpmss").arg("--mss")
+		mss_ = str(mss)
+		if mss_end:
+			mss_ += ":"+str(mss_end)
+		self.arg(mss_)
 
 __all__ = [
 	"Match",
@@ -79,6 +86,7 @@ __all__ = [
 	"MatchTCP",
 	"MatchUDP",
 	"MatchICMP",
-	"MatchMAC"
+	"MatchMAC",
+	"MatchTCPMSS"
 ]
 
