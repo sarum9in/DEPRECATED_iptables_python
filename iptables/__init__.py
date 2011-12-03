@@ -10,6 +10,7 @@ class IPTables(object):
 		self._tables = ["filter", "nat", "mangle"]
 		self._list = []
 		self._debug = False
+		self._silent = False
 		self.set_command(["iptables"])
 	def apply_rule(self, rule):
 		"""
@@ -41,13 +42,15 @@ class IPTables(object):
 		self._list.append(cmd)
 	def set_command(self, command):
 		self._command = command
-	def set_debug(self):
+	def set_debug(self, value=True):
 		"""
 			Set Iptables object to debug mode
 			In this mode it will simply print everything to stdout
 			instead of trying to do it
 		"""
-		self._debug = True
+		self._debug = value
+	def set_silent(self, value=True):
+		self._silent = value
 	def set_normal(self):
 		"""Set Iptables object to normal mode"""
 		self._debug = False
@@ -60,18 +63,18 @@ class IPTables(object):
 			self.apply_rule(Policy(chain=i, policy="ACCEPT"))
 	def ip_forward(self, value=True):
 		fmt = value and "1" or "0"
-		if self._debug:
+		if not self._silent:
 			print("echo {} >/proc/sys/net/ipv4/ip_forward".format(fmt))
-		else:
+		if not self._debug:
 			with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
 				f.write(fmt)
 	def commit(self):
 		"""Apply changes, all previous methods will only prepare things in memory"""
 		to_strlist = lambda x: list(map(str, x))
 		for i in self._list:
-			if self._debug:
+			if not self._silent:
 				print(" ".join(self._command+to_strlist(i)))
-			else:
+			if not self._debug:
 				with subprocess.Popen(self._command+to_strlist(i)) as cmd:
 					cmd.wait()
 
