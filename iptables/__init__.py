@@ -67,11 +67,12 @@ class IPTables(object):
 				f.write(fmt)
 	def commit(self):
 		"""Apply changes, all previous methods will only prepare things in memory"""
+		to_strlist = lambda x: list(map(str, x))
 		for i in self._list:
 			if self._debug:
-				print(" ".join(self._command+list(map(str, i))))
+				print(" ".join(self._command+to_strlist(i)))
 			else:
-				with subprocess.Popen(self._command+i) as cmd:
+				with subprocess.Popen(self._command+to_strlist(i)) as cmd:
 					cmd.wait()
 
 from iptables.option import *
