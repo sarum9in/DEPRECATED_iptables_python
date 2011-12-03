@@ -84,7 +84,7 @@ class MatchTCPMSS(Match):
 class MatchState(Match):
 	def __init__(self, *state):
 		super(MatchState, self).__init__()
-		self.match("state").arg(",".join(state))
+		self.match("state").arg("--state", ",".join(state))
 
 __all__ = [
 	"Match",
