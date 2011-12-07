@@ -139,7 +139,7 @@ class REJECT(Rule):
 class TCPMSS(Rule):
 	def __init__(self):
 		super(TCPMSS, self).__init__()
-		self.table("filter").chain("FORWARD")
+		self.table("mangle").chain("FORWARD")
 		self.option(Protocol("tcp"))
 		self.jump("TCPMSS")
 		self._inited = False
