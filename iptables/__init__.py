@@ -86,50 +86,19 @@ class Policy(object):
 	def __init__(self, chain, policy=None):
 		self._chain = chain
 		self._policy = policy
+	def policy(self, policy):
+		self._policy = policy
+		return self
 	def drop(self):
-		self._policy = "DROP"
-		return self
+		return self.policy("DROP")
 	def accept(self):
-		self._policy = "ACCEPT"
-		return self
+		return self.policy("ACCEPT")
 	def reject(self):
-		self._policy = "REJECT"
-		return self
+		return self.policy("REJECT")
 	def apply(self, iptables):
 		iptables.add_raw_rule(table="filter", rule=["--policy", self._chain, self._policy])
 	def __repr__(self):
 		return "Policy(chain={chain}, policy={policy})".format(chain=self._chain, policy=self._policy)
 
 from iptables.match import *
-
-__all__ = [
-	"IPTables",
-# Rules
-	"Rule",
-	"DNAT",
-	"SNAT",
-	"MASQUERADE",
-	"ACCEPT",
-	"ACCEPT_INPUT",
-	"DROP",
-	"REJECT",
-	"TCPMSS",
-	"Policy",
-# Matches
-	"Match",
-	"MatchTCPUDP",
-	"MatchTCP",
-	"MatchUDP",
-	"MatchICMP",
-	"MatchMAC",
-	"MatchTCPMSS",
-	"MatchState",
-# Options
-	"Option",
-	"Protocol",
-	"Source",
-	"Destination",
-	"InInterface",
-	"OutInterface"
-]
 

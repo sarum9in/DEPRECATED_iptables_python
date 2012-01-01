@@ -43,9 +43,9 @@ class MatchTCPUDP(Match):
 		super(MatchTCPUDP, self).__init__()
 		self.match(protocol)
 		if sport:
-			self.arg("--source-port", create_range(":", sport, sport_end))
+			self.arg("--source-port", _create_range(":", sport, sport_end))
 		if dport:
-			self.arg("--destination-port", create_range(":", dport, dport_end))
+			self.arg("--destination-port", _create_range(":", dport, dport_end))
 	def setup(self, policy):
 		policy.option(Protocol(self._match))
 
@@ -85,15 +85,4 @@ class MatchState(Match):
 	def __init__(self, *state):
 		super(MatchState, self).__init__()
 		self.match("state").arg("--state", ",".join(state))
-
-__all__ = [
-	"Match",
-	"MatchTCPUDP",
-	"MatchTCP",
-	"MatchUDP",
-	"MatchICMP",
-	"MatchMAC",
-	"MatchTCPMSS",
-	"MatchState"
-]
 

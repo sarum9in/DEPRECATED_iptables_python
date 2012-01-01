@@ -154,15 +154,3 @@ class TCPMSS(Rule):
 		self._inited = True
 		return self
 
-__all__ = [
-	"Rule",
-	"DNAT",
-	"SNAT",
-	"MASQUERADE",
-	"ACCEPT",
-	"ACCEPT_INPUT",
-	"DROP",
-	"REJECT",
-	"TCPMSS"
-]
-

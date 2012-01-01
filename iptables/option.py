@@ -39,12 +39,3 @@ class OutInterface(Option):
 	def __init__(self, interface):
 		super(OutInterface, self).__init__("--out-interface", [interface])
 
-__all__ = [
-	"Option",
-	"Protocol",
-	"Source",
-	"Destination",
-	"InInterface",
-	"OutInterface"
-]
-
